@@ -1,97 +1,72 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Educase assignment — Rick and Morty browser
 
-# Getting Started
+React Native CLI app (TypeScript) that loads a large, paginated dataset from a public API, supports search and infinite scrolling, uses Redux for state, persists character data locally, and records app lifecycle transitions.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## What it does
 
-## Step 1: Start Metro
+- **Characters** — Browse Rick and Morty characters from [The Rick and Morty API](https://rickandmortyapi.com/) with **infinite scroll** (loads the next page as you reach the end of the list).
+- **Search** — Filter by name with **debounced** requests so typing does not spam the network.
+- **Details** — Second screen shows a character’s profile (image, status, species, origin, location, episode count).
+- **About** — Third screen summarizes the app and shows **recent `AppState` transitions** (foreground / background / inactive).
+- **Persistence** — The characters slice (list, pagination metadata, search query) is **persisted with Redux Persist** to AsyncStorage so the last loaded data is available again after a cold start.
+- **Lifecycle** — `AppState` is subscribed in `useAppLifecycle`; transitions are stored in Redux for the About screen.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+UI uses **core React Native primitives only** (no UI kits). Navigation uses **React Navigation** (stack), which is separate from UI component libraries.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## How to run
+
+**Prerequisites:** Node ≥ 22, JDK and Android Studio (for Android), Xcode (for iOS, macOS only). Follow the [official environment setup](https://reactnative.dev/docs/set-up-your-environment).
+
+From this directory:
 
 ```sh
-# Using npm
+npm install
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+In another terminal:
 
 ```sh
-# Using npm
+# Android (emulator or device)
 npm run android
 
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+# iOS (macOS): install pods after native dependency changes, then:
+cd ios && bundle exec pod install && cd ..
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+**Tests:**
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+npm test
+```
 
-## Step 3: Modify your app
+## Technical choices
 
-Now that you have successfully run the app, let's make changes!
+| Area | Choice | Why |
+|------|--------|-----|
+| API | Rick and Morty REST API | Free, HTTPS, built-in **pagination** (`?page=`) and **name search** (`?name=`) |
+| State | Redux Toolkit + react-redux | Fits the brief; async logic in `createAsyncThunk` |
+| Persistence | redux-persist + AsyncStorage | Restores list + query after kill/relaunch; lifecycle slice is **not** persisted (session-only) |
+| Navigation | `@react-navigation/native` + native stack | Standard stack navigation for three screens |
+| Lists | `FlatList` + `keyExtractor` + windowing props | Keeps scrolling smooth on large lists |
+| Search | Local debounce (400ms) | Reduces API calls while typing |
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Possible improvements (time permitting)
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+- Pull-to-refresh and explicit offline mode using persisted data when the network fails.
+- Deeper error handling on the detail screen (failed single-character fetch).
+- Unit tests for reducers/thunks and a small integration test for the list screen.
+- Image caching or smaller thumbnails for slower networks.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Project layout
 
-## Congratulations! :tada:
+- `App.tsx` — Providers (`redux`, `redux-persist`, safe area), `NavigationContainer`, lifecycle hook.
+- `src/store/` — Store, persisted reducer, characters + lifecycle slices.
+- `src/screens/` — List, detail, about.
+- `src/api/` — Fetch helpers for the public API.
+- `src/hooks/useAppLifecycle.ts` — `AppState` subscription.
 
-You've successfully run and modified your React Native App. :partying_face:
+---
 
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Bootstrapped with `@react-native-community/cli` (React Native **0.85**, **no Expo**).
